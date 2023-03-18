@@ -3,7 +3,7 @@ from collections import OrderedDict
 import typing
 from functools import reduce
 
-from nanorm.Storage import Storage 
+from nanorm import Storage 
 
 class FileStorage(Storage):
     # name, field type in db, transform function

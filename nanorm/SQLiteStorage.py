@@ -2,7 +2,7 @@ import sqlite3
 from collections import OrderedDict
 import typing
 
-from nanorm.Storage import Storage
+from nanorm import Storage
 from nanorm.utils import quote
 
 class SQLiteStorage(Storage):

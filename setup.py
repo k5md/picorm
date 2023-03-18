@@ -6,7 +6,7 @@ approot = os.getcwd()
 with open("README.md", "r", encoding="utf-8") as file:
     long_description = file.read()
 
-with open(os.path.join(approot, "src", "nanorm", "__about__.py"), "r", encoding="utf-8") as file:
+with open(os.path.join(approot, "nanorm", "__about__.py"), "r", encoding="utf-8") as file:
     about = file.read()
     exec(about)
 
