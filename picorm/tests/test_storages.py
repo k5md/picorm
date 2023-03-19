@@ -3,8 +3,8 @@ import os
 
 import pytest
 
-from nanorm import FileStorage
-from nanorm import SQLiteStorage
+from picorm import FileStorage
+from picorm import SQLiteStorage
 
 @pytest.fixture(autouse=True)
 def db_path():

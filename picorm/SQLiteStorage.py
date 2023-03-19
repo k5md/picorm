@@ -2,8 +2,8 @@ import sqlite3
 from collections import OrderedDict
 import typing
 
-from nanorm import Storage
-from nanorm.utils import quote
+from picorm import Storage
+from picorm.utils import quote
 
 class SQLiteStorage(Storage):
     # name, field type in db, transform function

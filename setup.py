@@ -6,7 +6,7 @@ approot = os.getcwd()
 with open("README.md", "r", encoding="utf-8") as file:
     long_description = file.read()
 
-with open(os.path.join(approot, "nanorm", "__about__.py"), "r", encoding="utf-8") as file:
+with open(os.path.join(approot, "picorm", "__about__.py"), "r", encoding="utf-8") as file:
     about = file.read()
     exec(about)
 
@@ -20,7 +20,7 @@ setuptools.setup(
     long_description_content_type = "text/markdown",
     url = __uri__,
     project_urls = {
-        "Bug Tracker": "https://github.com/k5md/nanorm/issues",
+        "Bug Tracker": "https://github.com/k5md/picorm/issues",
     },
     license = __license__,
     classifiers = [
@@ -32,10 +32,9 @@ setuptools.setup(
         "Topic :: Database",
         "Topic :: Database :: Front-Ends",
     ],
-    package_dir = { "": "src" },
+    package_dir = { "": "picorm" },
     packages = setuptools.find_packages(
-        where="src",
-        include=["nanorm*"],
+        where="picorm",
     ),
     python_requires = ">=3.7",
     install_requires=[],

@@ -2,6 +2,10 @@ from collections import OrderedDict
 import typing
 
 class Storage():
+    """Base storage class, serves as an adapter between storage-specific methods,
+    that have to be implemented in subclasses, and interface available to users
+    on user-defined subclasses of StorageTable and StorageTableRecord
+    """
     def connect(self, db_path): raise NotImplementedError()
     def disconnect(self): raise NotImplementedError()
     def create(self, name, fields: OrderedDict, log = lambda *args: None): raise NotImplementedError()
