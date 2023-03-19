@@ -157,3 +157,49 @@ def test_multiple_tables(db_path, Storage):
     assert len(expected) == test_size
 
     storage.disconnect()
+
+@pytest.mark.parametrize('Storage', [FileStorage, SQLiteStorage])
+def test_from_readme(db_path, Storage):
+    storage = Storage(db_path) # create storage object
+
+    # every collection that you need to store must inherit from storage's Table class
+    class Users(storage.Table): 
+        def __init__(self, fields = {}):
+            defaults = OrderedDict([('key', 'users')]) # specify table name
+            for k, v in fields.items():
+                defaults[k] = v
+            super().__init__(defaults)
+            storage.create('users', OrderedDict([ # specify table name and desired fields to be stored
+                ('key', storage.types['int']), 
+                ('id', storage.types['int']),
+                ('name', storage.types['str']),
+                ('type', storage.types['str']),
+            ]))
+            # every query on storage.users will return object of this class if not specified otherwise
+            class User(self.Record): 
+                def __init__(self, fields = {}):
+                    # default values for fields
+                    defaults = OrderedDict([
+                        ('key', -1), 
+                        ('id', -1),
+                        ('name', ':null'),
+                        ('type', ':null'),
+                    ])
+                    for k, v in fields.items():
+                        defaults[k] = v
+                    super().__init__(defaults)
+                # that's it, you can add your own methods and properties
+            self.User = User # attach classes to table object
+    users = Users() # create table object
+    users.Record = users.User # make every query return object of class User
+    ### Storage querying
+    new_user = users.User({'id': 42, 'name': 'foo'}) # create record, you can do it this way or through storage.users.User
+    users.add (new_user) # place it in storage
+    found_user = users.find_one({'name': 'foo'}) # get storage Record - an object of class User
+    found_user.get('id') # get record's field value
+    found_user.set({'name': 'bar'}) # change desired fields
+    assert found_user.get('id') == new_user.get('id')
+    assert found_user.fields == new_user.fields
+    assert found_user.get('name') == 'bar' and new_user.get('name') == 'bar'
+    storage.disconnect() # disconnect from storage
+    
