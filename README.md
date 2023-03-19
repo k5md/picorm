@@ -43,14 +43,18 @@ class Users(storage.Table):
                     defaults[k] = v
                 super().__init__(defaults)
             # that's it, you can add your own methods and properties
-        
         self.User = User # attach classes to table object
-
-# create table object
-users = Users()
-
-# make every query return object of class User
-users.Record = users.User
+users = Users() # create table object
+users.Record = users.User # make every query return object of class User
+```
+### Storage querying
+```python
+new_user = users.User({'id': 42, 'name': 'foo'}) # create record, you can do it this way or through storage.users.User
+users.add (new_user) # place it in storage
+found_user = users.find_one({'name': 'foo'}) # get storage Record - an object of class User
+found_user.get('id') # get record's field value
+found_user.set({'name': 'bar'}) # change desired fields
+storage.disconnect() # don't forget to disconnect from storage if you're planning to switch engines
 ```
 
 ### Return different subclasses of table record
@@ -83,7 +87,7 @@ users.Record = lambda fields: users.type_class_map[fields['type']](fields)
 ### Table methods 
 | method   | arguments               | returns              |
 | :------  | :---------------------- | :------------------- |
-| create   |self, name, schema, log  | None                 |
+| create   |self, name, schema, log  |None                  |
 | find     |self, selector           |list of Record objects|
 | find_one |self, selector           |Record object or None |
 | find_max |self, key                |Record object or None |
