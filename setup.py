@@ -32,10 +32,8 @@ setuptools.setup(
         "Topic :: Database",
         "Topic :: Database :: Front-Ends",
     ],
-    package_dir = { "": "picorm" },
-    packages = setuptools.find_packages(
-        where="picorm",
-    ),
+    package_dir = { ".": "picorm" },
+    packages = setuptools.find_packages(),
     python_requires = ">=3.7",
     install_requires=[],
     include_package_data = True,
