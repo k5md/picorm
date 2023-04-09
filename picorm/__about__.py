@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 __title__ = "picorm"
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __author__ = "k5md"
 __email__ = "k-5md@yandex.ru"
 __summary__ = "Small ORM with limited functions for multiple database engines for pet-projects"
