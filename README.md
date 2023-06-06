@@ -12,6 +12,7 @@ pip install picorm
 
 ### Simple usage
 ```python
+from collections import OrderedDict
 from picorm import FileStorage as Storage # import one of storage implementations
 
 storage = Storage('path_to_database_file') # create storage object
