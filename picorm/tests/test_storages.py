@@ -9,9 +9,12 @@ from picorm import SQLiteStorage
 @pytest.fixture(autouse=True)
 def db_path():
     db_path = 'test_storage'
+    backup_postfix = '_backup'
     if os.path.exists(db_path): os.remove(db_path)
+    if os.path.exists(db_path + backup_postfix): os.remove(db_path + backup_postfix)
     yield db_path
     if os.path.exists(db_path): os.remove(db_path)
+    if os.path.exists(db_path + backup_postfix): os.remove(db_path + backup_postfix)
 
 @pytest.mark.parametrize('Storage', [FileStorage, SQLiteStorage])
 def test_storage(db_path, Storage):
@@ -202,4 +205,69 @@ def test_from_readme(db_path, Storage):
     assert found_user.fields == new_user.fields
     assert found_user.get('name') == 'bar' and new_user.get('name') == 'bar'
     storage.disconnect() # disconnect from storage
+
+@pytest.mark.parametrize('Storage', [FileStorage])
+def test_backup(db_path, Storage):
+    backup_db_path = db_path + '_backup'
+    storage = Storage(db_path)
+    def makeUsers(storage):
+        class Users(storage.Table): 
+            def __init__(self, fields = {}):
+                defaults = OrderedDict([('key', 'users')])
+                for k, v in fields.items():
+                    defaults[k] = v
+                super().__init__(defaults)
+                storage.create('users', OrderedDict([
+                    ('key', storage.types['int']), 
+                    ('id', storage.types['int']),
+                    ('name', storage.types['str']),
+                    ('type', storage.types['str']),
+                ]))
+                class User(self.Record): 
+                    def __init__(self, fields = {}):
+                        defaults = OrderedDict([
+                            ('key', -1), 
+                            ('id', -1),
+                            ('name', ':null'),
+                            ('type', ':null'),
+                        ])
+                        for k, v in fields.items():
+                            defaults[k] = v
+                        super().__init__(defaults)
+                self.User = User
+        return Users
+    users = makeUsers(storage)()
+    users.Record = users.User
+    new_user = users.User({'id': 42, 'name': 'foo'})
+    users.add(new_user)
+    expected_user_fields = new_user.fields
+    storage.disconnect()
+    
+    open(db_path, 'w').close()
+    # backup must be present and seamlessly replace corrupted db
+    storage = Storage(db_path)
+    users = makeUsers(storage)()
+    users.Record = users.User
+    found_user = users.find_one({'name': 'foo'})
+    assert found_user.fields == expected_user_fields
+    # backup must be identical to original after each write
+    found_user.set({'name': 'bar'})
+    expected_user_fields = found_user.fields
+    storage.disconnect()
+    storage = Storage(db_path)
+    users = makeUsers(storage)()
+    users.Record = users.User
+    found_user = users.find_one({'name': 'bar'})
+    assert found_user.fields == expected_user_fields
+    # if backup is corrupted it must be corrected on db connection
+    storage.disconnect()
+    open(backup_db_path, 'w').close()
+    storage = Storage(db_path)
+    users = makeUsers(storage)()
+    storage.disconnect()
+    open(db_path, 'w').close()
+    storage = Storage(db_path)
+    users = makeUsers(storage)()
+    found_user = users.find_one({'name': 'bar'})
+    assert found_user.fields == expected_user_fields
     

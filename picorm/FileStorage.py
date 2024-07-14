@@ -11,21 +11,40 @@ class FileStorage(Storage):
         'int': ('int', '', int), 
         'str': ('str', '', str),
     }
+    backup_postfix = '_backup'
+
+    @staticmethod
+    def _write_file(file_path, data):
+        with open(file_path, 'wb') as f:
+            data = pickle.dump(data, f)
+        return data
+
+    def _read_file(file_path):
+        with open(file_path, 'rb') as f:
+            data = pickle.load(f, encoding='utf-8')
+            return data
 
     @staticmethod
     def _read(file_path):
         try:
-            with open(file_path, 'rb') as f:
-                data = pickle.load(f, encoding='utf-8')
+            data = FileStorage._read_file(file_path)
+            FileStorage._write_file(file_path + FileStorage.backup_postfix, data)
+            return data
+        except:
+            try:
+                data = FileStorage._read_file(file_path + FileStorage.backup_postfix)
+                FileStorage._write_file(file_path, data)
                 return data
-        except FileNotFoundError:
-            return {}
+            except Exception as e: 
+                if type(e) == FileNotFoundError:
+                    return {}
+                raise e
     
     @staticmethod
     def _write(data, file_path):
-        with open(file_path, 'wb') as f:
-            data = pickle.dump(data, f)
-            return data
+        FileStorage._write_file(file_path, data)
+        FileStorage._write_file(file_path + FileStorage.backup_postfix, data)
+        return data
     
     def _transform(self, name, entry: OrderedDict):
         return OrderedDict((k, self.schemata[name][k][2](v)) for k, v in entry.items())
