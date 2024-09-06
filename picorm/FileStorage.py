@@ -2,6 +2,7 @@ import pickle
 from collections import OrderedDict
 import typing
 from functools import reduce
+from shutil import copyfile
 
 from picorm import Storage 
 
@@ -26,14 +27,15 @@ class FileStorage(Storage):
 
     @staticmethod
     def _read(file_path):
+        target_path = file_path
+        backup_path = file_path + FileStorage.backup_postfix
         try:
-            data = FileStorage._read_file(file_path)
-            FileStorage._write_file(file_path + FileStorage.backup_postfix, data)
+            data = FileStorage._read_file(target_path)
             return data
         except:
             try:
-                data = FileStorage._read_file(file_path + FileStorage.backup_postfix)
-                FileStorage._write_file(file_path, data)
+                data = FileStorage._read_file(backup_path)
+                copyfile(backup_path, target_path)
                 return data
             except Exception as e: 
                 if type(e) == FileNotFoundError:
@@ -42,8 +44,11 @@ class FileStorage(Storage):
     
     @staticmethod
     def _write(data, file_path):
-        FileStorage._write_file(file_path, data)
-        FileStorage._write_file(file_path + FileStorage.backup_postfix, data)
+        target_path = file_path
+        backup_path = file_path + FileStorage.backup_postfix
+        FileStorage._write_file(backup_path, data)
+        FileStorage._read_file(backup_path)
+        copyfile(backup_path, target_path)
         return data
     
     def _transform(self, name, entry: OrderedDict):
